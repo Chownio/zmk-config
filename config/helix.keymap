@@ -16,16 +16,6 @@
 #define ADJUST 3
 
 / {
-    behaviors {
-        soft_off_hold: soft_off_hold {
-            compatible = "zmk,behavior-hold-tap";
-            #binding-cells = <2>;
-            flavor = "hold-preferred";
-            tapping-term-ms = <1000>;
-            bindings = <&soft_off>, <&none>;
-        };
-    };
-
     keymap {
         compatible = "zmk,keymap";
 
@@ -100,7 +90,7 @@
             bindings = <
   &kp F1        &kp F2        &kp F3        &kp F4  &kp F5  &kp F6                  &kp F7  &kp F8  &kp F9  &kp F10  &kp F11             &kp F12
   &trans    &sys_reset        &trans  &kp K_CLEAR  &trans  &trans                  &trans  &trans  &trans   &trans   &trans           &kp DEL
-  &trans        &trans        &trans        &trans  &trans  &trans                  &trans  &trans  &trans   &trans   &trans  &soft_off_hold 0 0
+  &trans        &trans        &trans        &trans  &trans  &trans                  &trans  &trans  &trans   &trans   &trans         &soft_off
   &trans  &bt BT_CLR  &bt BT_NXT  &bt BT_PRV  &trans  &trans  &trans  &trans  &trans  &trans  &out OUT_TOG  &out OUT_USB  &out OUT_BLE  &ext_power EP_TOG
             >;
         };
