@@ -16,6 +16,16 @@
 #define ADJUST 3
 
 / {
+    behaviors {
+        soft_off_hold: soft_off_hold {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "hold-preferred";
+            tapping-term-ms = <1000>;
+            bindings = <&soft_off>, <&kp>;
+        };
+    };
+
     keymap {
         compatible = "zmk,keymap";
 
@@ -34,7 +44,7 @@
   &kp TAB    &kp Q     &kp W     &kp F      &kp P      &kp G                          &kp J      &kp L      &kp U       &kp Y   &kp SEMI   &kp BSPC
 &kp LCTRL    &kp A     &kp R     &kp S      &kp T      &kp D                          &kp H      &kp N      &kp E       &kp I      &kp O    &kp SQT
 &kp LSHFT    &kp Z     &kp X     &kp C      &kp V      &kp B                          &kp K      &kp M  &kp COMMA  &kp PERIOD  &kp SLASH    &kp RET
-    &mo 3  &kp ESC  &kp LALT  &kp LGUI  &kp LANG2  &mo 1  &kp SPACE  &kp SPACE      &mo 2  &kp LANG1   &kp LEFT    &kp DOWN     &kp UP  &kp RIGHT
+    &mo 3  &kp ESC  &kp LALT  &kp LGUI  &kp LANG2  &kp SPACE &mo 1          &mo 2 &kp SPACE  &kp LANG1   &kp LEFT    &kp DOWN     &kp UP  &kp RIGHT
             >;
         };
 
@@ -44,7 +54,7 @@
             // |------+------+------+------+------+------|             |------+------+------+------+------+------|
             // |      |  F1  |  F2  |  F3  |  F4  |  F5  |             |  F6  |   _  |   +  |   {  |   }  | Pipe |
             // |------+------+------+------+------+------|             |------+------+------+------+------+------|
-            // | CAPS |  F7  |  F8  |  F9  |  F10 |  F11 |             |  F12 |      |      | Home | End  |      |
+            // |      |  F7  |  F8  |  F9  |  F10 |  F11 |             |  F12 |      |      | Home | End  |      |
             // |------+------+------+------+------+------+------+------+------+------+------+------+------+------|
             // |      |      |      |      |      |      |      |      |      |      | Next | Vol- | Vol+ | Play |
             // '--------------------------------------------------------------------------------------------------'
@@ -52,7 +62,7 @@
             bindings = <
 &kp TILDE  &kp EXCL  &kp AT  &kp HASH  &kp DLLR  &kp PRCNT                         &kp CARET   &kp AMPS  &kp ASTRK  &kp LPAR  &kp RPAR    &trans
    &trans    &kp F1  &kp F2    &kp F3    &kp F4     &kp F5                            &kp F6  &kp UNDER   &kp PLUS  &kp LBRC  &kp RBRC  &kp PIPE
- &kp CAPS    &kp F7  &kp F8    &kp F9   &kp F10    &kp F11                           &kp F12     &trans     &trans  &kp HOME   &kp END    &trans
+   &trans    &kp F7  &kp F8    &kp F9   &kp F10    &kp F11                           &kp F12     &trans     &trans  &kp HOME   &kp END    &trans
    &trans    &trans  &trans    &trans    &trans     &trans  &trans  &trans            &trans     &trans  &kp C_NEXT  &kp C_VOL_DN  &kp C_VOL_UP  &kp C_PP
             >;
         };
@@ -63,7 +73,7 @@
             // |------+------+------+------+------+------|             |------+------+------+------+------+------|
             // |      |  F1  |  F2  |  F3  |  F4  |  F5  |             |  F6  |   -  |   =  |   [  |   ]  |  \   |
             // |------+------+------+------+------+------|             |------+------+------+------+------+------|
-            // | CAPS |  F7  |  F8  |  F9  |  F10 |  F11 |             |  F12 |      |      |PageDn|PageUp|      |
+            // |      |  F7  |  F8  |  F9  |  F10 |  F11 |             |  F12 |      |      |PageDn|PageUp|      |
             // |------+------+------+------+------+------+------+------+------+------+------+------+------+------|
             // |      |      |      |      |      |      |      |      |      |      | Next | Vol- | Vol+ | Play |
             // '--------------------------------------------------------------------------------------------------'
@@ -71,7 +81,7 @@
             bindings = <
 &kp GRAVE  &kp N1  &kp N2  &kp N3   &kp N4   &kp N5                   &kp N6     &kp N7      &kp N8        &kp N9        &kp N0   &kp DEL
    &trans  &kp F1  &kp F2  &kp F3   &kp F4   &kp F5                   &kp F6  &kp MINUS   &kp EQUAL      &kp LBKT      &kp RBKT  &kp BSLH
- &kp CAPS  &kp F7  &kp F8  &kp F9  &kp F10  &kp F11                  &kp F12     &trans      &trans     &kp PG_DN     &kp PG_UP    &trans
+   &trans  &kp F7  &kp F8  &kp F9  &kp F10  &kp F11                  &kp F12     &trans      &trans     &kp PG_DN     &kp PG_UP    &trans
    &trans  &trans  &trans  &trans   &trans   &trans  &trans  &trans   &trans     &trans  &kp C_NEXT  &kp C_VOL_DN  &kp C_VOL_UP  &kp C_PP
             >;
         };
@@ -90,7 +100,7 @@
             bindings = <
   &kp F1        &kp F2        &kp F3        &kp F4  &kp F5  &kp F6                  &kp F7  &kp F8  &kp F9  &kp F10  &kp F11             &kp F12
   &trans    &sys_reset        &trans  &kp K_CLEAR  &trans  &trans                  &trans  &trans  &trans   &trans   &trans           &kp DEL
-  &trans        &trans        &trans        &trans  &trans  &trans                  &trans  &trans  &trans   &trans   &trans         &soft_off
+  &trans        &trans        &trans        &trans  &trans  &trans                  &trans  &trans  &trans   &trans   &trans  &soft_off_hold
   &trans  &bt BT_CLR  &bt BT_NXT  &bt BT_PRV  &trans  &trans  &trans  &trans  &trans  &trans  &out OUT_TOG  &out OUT_USB  &out OUT_BLE  &ext_power EP_TOG
             >;
         };
