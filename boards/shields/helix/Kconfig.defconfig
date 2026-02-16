@@ -13,6 +13,9 @@ if SHIELD_HELIX_LEFT || SHIELD_HELIX_RIGHT
 config ZMK_SPLIT
     default y
 
+config I2C
+    default y
+
 config LV_Z_VDB_SIZE
     default 64
 
