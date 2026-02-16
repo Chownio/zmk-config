@@ -23,3 +23,5 @@ include:
     shield: helix4_left
   - board: nice_nano_v2
     shield: helix4_right
+  - board: nice_nano_v2
+    shield: settings_reset
