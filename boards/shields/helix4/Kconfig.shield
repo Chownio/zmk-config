@@ -1,0 +1,5 @@
+config SHIELD_HELIX4_LEFT
+    def_bool $(shields_list_contains,helix4_left)
+
+config SHIELD_HELIX4_RIGHT
+    def_bool $(shields_list_contains,helix4_right)
