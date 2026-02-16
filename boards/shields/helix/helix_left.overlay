@@ -6,12 +6,6 @@
 
 #include "helix.dtsi"
 
-/ {
-    chosen {
-        zephyr,display = &oled;
-    };
-};
-
 &default_transform {
     col-offset = <0>;
 };
@@ -48,5 +42,11 @@
         display-offset = <0>;
         multiplex-ratio = <31>;
         prechargep = <0x22>;
+    };
+};
+
+/ {
+    chosen {
+        zephyr,display = &oled;
     };
 };
