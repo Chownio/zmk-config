@@ -20,8 +20,8 @@
 ---
 include:
   - board: nice_nano_v2
-    shield: helix4_left
+    shield: helix4_left nice_oled
   - board: nice_nano_v2
-    shield: helix4_right
+    shield: helix4_right nice_oled
   - board: nice_nano_v2
     shield: settings_reset
