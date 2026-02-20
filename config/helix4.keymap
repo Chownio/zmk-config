@@ -16,25 +16,18 @@
 #define ADJUST 3
 
 / {
-    macros {
-        soft_off_oled: soft_off_oled {
-            compatible = "zmk,behavior-macro";
-            #binding-cells = <0>;
-            bindings
-                = <&ext_power EP_OFF>
-                , <&macro_wait_time 300>
-                , <&soft_off>
-                ;
-        };
-    };
-
     behaviors {
+        display_soft_off: display_soft_off {
+            compatible = "zmk,behavior-display-soft-off";
+            #binding-cells = <0>;
+        };
+
         soft_off_hold: soft_off_hold {
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "hold-preferred";
             tapping-term-ms = <1000>;
-            bindings = <&soft_off_oled>, <&kp>;
+            bindings = <&display_soft_off>, <&kp>;
         };
     };
 

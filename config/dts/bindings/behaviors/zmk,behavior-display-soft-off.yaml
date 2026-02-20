@@ -1,0 +1,8 @@
+description: |
+  Display Soft Off behavior. Blanks the display before entering soft off state,
+  ensuring OLEDs turn off even when zmk_pm_soft_off() would otherwise suspend
+  the I2C bus before the display driver sends its display-off command.
+
+compatible: "zmk,behavior-display-soft-off"
+
+include: zero_param.yaml
