@@ -31,14 +31,14 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
     (IS_ENABLED(CONFIG_ZMK_SPLIT) && !IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL))
 
 /*
- * Override sys_poweroff (declared __weak in Zephyr) to clear GPIO SENSE
- * on all pins before entering nRF52 SYSTEMOFF.
+ * Wrap sys_poweroff via --wrap linker flag to clear GPIO SENSE on all
+ * pins before the real sys_poweroff enters nRF52 SYSTEMOFF.
  *
  * During normal operation the kscan matrix driver enables SENSE on row
  * pins for interrupt-driven scanning.  This SENSE persists into SYSTEMOFF
  * and causes any key press to generate a DETECT wakeup signal.  By
  * clearing SENSE here — after zmk_pm_soft_off() has already suspended
- * all devices — we guarantee no spurious wakeup can occur.
+ * all devices but before SYSTEMOFF — we prevent spurious wakeup.
  */
 #ifdef CONFIG_SOC_SERIES_NRF52X
 /* ZMK keys.h defines short macros (P, OUT, IN, SET, etc.) that conflict
@@ -51,7 +51,9 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #undef DIR
 #include <hal/nrf_gpio.h>
 
-static void disable_gpio_sense(void) {
+extern void __real_sys_poweroff(void);
+
+void __wrap_sys_poweroff(void) {
     for (uint32_t pin = 0; pin < 32; pin++) {
         nrf_gpio_cfg_sense_set(pin, NRF_GPIO_PIN_NOSENSE);
     }
@@ -60,14 +62,7 @@ static void disable_gpio_sense(void) {
         nrf_gpio_cfg_sense_set(pin, NRF_GPIO_PIN_NOSENSE);
     }
 #endif
-}
-
-void sys_poweroff(void) {
-    disable_gpio_sense();
-    nrf_gpio_pin_clear(0); /* dummy to ensure write completes */
-    NRF_POWER->SYSTEMOFF = 1;
-    __DSB();
-    while (1) { /* never reached */ }
+    __real_sys_poweroff();
 }
 #endif /* CONFIG_SOC_SERIES_NRF52X */
 
