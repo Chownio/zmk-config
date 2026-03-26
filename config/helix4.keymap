@@ -49,7 +49,7 @@
   &kp TAB    &kp Q     &kp W     &kp F      &kp P      &kp G                          &kp J      &kp L      &kp U       &kp Y   &kp SEMI   &kp BSPC
 &kp LCTRL    &kp A     &kp R     &kp S      &kp T      &kp D                          &kp H      &kp N      &kp E       &kp I      &kp O    &kp SQT
 &kp LSHFT    &kp Z     &kp X     &kp C      &kp V      &kp B                          &kp K      &kp M  &kp COMMA  &kp PERIOD  &kp SLASH    &kp RET
-    &mo 3  &kp ESC  &kp LALT  &kp LGUI  &kp LANG2  &kp SPACE &mo 1          &mo 2 &kp SPACE  &kp LANG1   &kp LEFT    &kp DOWN     &kp UP  &kp RIGHT
+    &mo 3  &kp ESC  &kp LALT  &kp LGUI     &trans  &kp SPACE &mo 1          &mo 2 &kp SPACE     &trans   &kp LEFT    &kp DOWN     &kp UP  &kp RIGHT
             >;
         };
 
