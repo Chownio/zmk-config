@@ -14,7 +14,6 @@
 #define DT_DRV_COMPAT zmk_behavior_display_soft_off
 
 #include <zephyr/device.h>
-#include <zephyr/drivers/gpio.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
@@ -32,31 +31,30 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
     (IS_ENABLED(CONFIG_ZMK_SPLIT) && !IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL))
 
 /*
- * Disconnect the key matrix GPIO pins before entering soft off.
- * On nRF52, GPIO SENSE can persist into SYSTEMOFF and any key press that
- * bridges a column to a row would generate a DETECT wakeup signal.
- * Reconfiguring every matrix pin as a plain input (no pull, no SENSE)
- * prevents that.
+ * Poweroff handler: clear GPIO SENSE on all pins before entering SYSTEMOFF.
+ * During normal operation the kscan matrix driver enables SENSE on row pins
+ * for interrupt-driven scanning.  This SENSE persists into SYSTEMOFF and
+ * causes any key press to generate a DETECT wakeup signal.  By clearing
+ * SENSE in a poweroff handler (which runs inside sys_poweroff(), after all
+ * device PM suspend callbacks), we guarantee no spurious wakeup can occur.
  */
-#define KSCAN_NODE DT_CHOSEN(zmk_kscan)
+#ifdef CONFIG_SOC_SERIES_NRF52X
+#include <hal/nrf_gpio.h>
+#include <zephyr/sys/poweroff.h>
 
-static void disconnect_kscan_gpios(void) {
-#if DT_NODE_HAS_PROP(KSCAN_NODE, row_gpios)
-    static const struct gpio_dt_spec rows[] = {
-        DT_FOREACH_PROP_ELEM_SEP(KSCAN_NODE, row_gpios, GPIO_DT_SPEC_GET_BY_IDX, (,))
-    };
-    static const struct gpio_dt_spec cols[] = {
-        DT_FOREACH_PROP_ELEM_SEP(KSCAN_NODE, col_gpios, GPIO_DT_SPEC_GET_BY_IDX, (,))
-    };
-
-    for (size_t i = 0; i < ARRAY_SIZE(rows); i++) {
-        gpio_pin_configure(rows[i].port, rows[i].pin, GPIO_INPUT);
+static void disable_gpio_wakeup(void) {
+    for (uint32_t pin = 0; pin < 32; pin++) {
+        nrf_gpio_cfg_sense_set(pin, NRF_GPIO_PIN_NOSENSE);
     }
-    for (size_t i = 0; i < ARRAY_SIZE(cols); i++) {
-        gpio_pin_configure(cols[i].port, cols[i].pin, GPIO_INPUT);
+#if defined(NRF_P1)
+    for (uint32_t pin = 32; pin < 48; pin++) {
+        nrf_gpio_cfg_sense_set(pin, NRF_GPIO_PIN_NOSENSE);
     }
 #endif
 }
+
+SYS_POWEROFF_HANDLER_DEFINE(disable_gpio_wakeup);
+#endif /* CONFIG_SOC_SERIES_NRF52X */
 
 static void blank_display(void) {
 #if DT_HAS_CHOSEN(zephyr_display)
@@ -75,7 +73,6 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
      * This mirrors &soft_off's split-peripheral-off-on-press behavior. */
     if (IS_SPLIT_PERIPHERAL) {
         blank_display();
-        disconnect_kscan_gpios();
         zmk_pm_soft_off();
     }
 
@@ -87,7 +84,6 @@ static int on_keymap_binding_released(struct zmk_behavior_binding *binding,
     /* On central (or non-split), blank the display while I2C is still
      * active, then enter soft off. */
     blank_display();
-    disconnect_kscan_gpios();
     zmk_pm_soft_off();
 
     return ZMK_BEHAVIOR_OPAQUE;
