@@ -39,6 +39,9 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
  * device PM suspend callbacks), we guarantee no spurious wakeup can occur.
  */
 #ifdef CONFIG_SOC_SERIES_NRF52X
+/* ZMK keys.h defines single-letter macros (P, etc.) that conflict with
+ * Nordic HAL's NRF_P0/NRF_P1 port macros via token pasting. */
+#undef P
 #include <hal/nrf_gpio.h>
 #include <zephyr/sys/poweroff.h>
 
