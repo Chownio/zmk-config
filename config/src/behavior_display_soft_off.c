@@ -34,11 +34,10 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
  * Wrap sys_poweroff via --wrap linker flag to clear GPIO SENSE on all
  * pins before the real sys_poweroff enters nRF52 SYSTEMOFF.
  *
- * During normal operation the kscan matrix driver enables SENSE on row
- * pins for interrupt-driven scanning.  This SENSE persists into SYSTEMOFF
- * and causes any key press to generate a DETECT wakeup signal.  By
- * clearing SENSE here — after zmk_pm_soft_off() has already suspended
- * all devices but before SYSTEMOFF — we prevent spurious wakeup.
+ * We only clear SENSE when the user explicitly triggered soft-off via
+ * the display_soft_off behavior (flag: hard_off_requested).  Idle deep
+ * sleep also calls sys_poweroff, but in that case we leave SENSE intact
+ * so a key press can wake the board.
  */
 #ifdef CONFIG_SOC_SERIES_NRF52X
 /* ZMK keys.h defines short macros (P, OUT, IN, SET, etc.) that conflict
@@ -51,17 +50,21 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #undef DIR
 #include <hal/nrf_gpio.h>
 
+static bool hard_off_requested;
+
 extern void __real_sys_poweroff(void);
 
 void __wrap_sys_poweroff(void) {
-    for (uint32_t pin = 0; pin < 32; pin++) {
-        nrf_gpio_cfg_sense_set(pin, NRF_GPIO_PIN_NOSENSE);
-    }
+    if (hard_off_requested) {
+        for (uint32_t pin = 0; pin < 32; pin++) {
+            nrf_gpio_cfg_sense_set(pin, NRF_GPIO_PIN_NOSENSE);
+        }
 #if defined(NRF_P1)
-    for (uint32_t pin = 32; pin < 48; pin++) {
-        nrf_gpio_cfg_sense_set(pin, NRF_GPIO_PIN_NOSENSE);
-    }
+        for (uint32_t pin = 32; pin < 48; pin++) {
+            nrf_gpio_cfg_sense_set(pin, NRF_GPIO_PIN_NOSENSE);
+        }
 #endif
+    }
     __real_sys_poweroff();
 }
 #endif /* CONFIG_SOC_SERIES_NRF52X */
@@ -83,6 +86,9 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
      * This mirrors &soft_off's split-peripheral-off-on-press behavior. */
     if (IS_SPLIT_PERIPHERAL) {
         blank_display();
+#ifdef CONFIG_SOC_SERIES_NRF52X
+        hard_off_requested = true;
+#endif
         zmk_pm_soft_off();
     }
 
@@ -94,6 +100,9 @@ static int on_keymap_binding_released(struct zmk_behavior_binding *binding,
     /* On central (or non-split), blank the display while I2C is still
      * active, then enter soft off. */
     blank_display();
+#ifdef CONFIG_SOC_SERIES_NRF52X
+    hard_off_requested = true;
+#endif
     zmk_pm_soft_off();
 
     return ZMK_BEHAVIOR_OPAQUE;
