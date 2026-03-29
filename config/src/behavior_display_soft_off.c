@@ -31,13 +31,19 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
     (IS_ENABLED(CONFIG_ZMK_SPLIT) && !IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL))
 
 /*
- * Wrap sys_poweroff via --wrap linker flag to clear GPIO SENSE on all
- * pins before the real sys_poweroff enters nRF52 SYSTEMOFF.
+ * Wrap z_sys_poweroff via --wrap linker flag to clear GPIO SENSE on all
+ * pins just before the nRF52 enters SYSTEMOFF.
+ *
+ * Zephyr's sys_poweroff() calls pm_suspend_devices() first (which lets
+ * the kscan driver re-enable SENSE via wakeup-source), then calls
+ * z_sys_poweroff() for the actual hardware power-off.  By wrapping
+ * z_sys_poweroff we run AFTER device suspend, so our SENSE clear
+ * cannot be undone.
  *
  * We only clear SENSE when the user explicitly triggered soft-off via
  * the display_soft_off behavior (flag: hard_off_requested).  Idle deep
- * sleep also calls sys_poweroff, but in that case we leave SENSE intact
- * so a key press can wake the board.
+ * sleep also goes through this path, but in that case we leave SENSE
+ * intact so a key press can wake the board.
  */
 #ifdef CONFIG_SOC_SERIES_NRF52X
 /* ZMK keys.h defines short macros (P, OUT, IN, SET, etc.) that conflict
@@ -52,9 +58,9 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 static bool hard_off_requested;
 
-extern void __real_sys_poweroff(void);
+extern void __real_z_sys_poweroff(void);
 
-void __wrap_sys_poweroff(void) {
+void __wrap_z_sys_poweroff(void) {
     if (hard_off_requested) {
         for (uint32_t pin = 0; pin < 32; pin++) {
             nrf_gpio_cfg_sense_set(pin, NRF_GPIO_PIN_NOSENSE);
@@ -65,7 +71,7 @@ void __wrap_sys_poweroff(void) {
         }
 #endif
     }
-    __real_sys_poweroff();
+    __real_z_sys_poweroff();
 }
 #endif /* CONFIG_SOC_SERIES_NRF52X */
 

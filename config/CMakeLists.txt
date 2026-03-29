@@ -2,4 +2,4 @@
 # SPDX-License-Identifier: MIT
 
 target_sources(app PRIVATE src/behavior_display_soft_off.c)
-target_link_options(app PRIVATE -Wl,--wrap=sys_poweroff)
+target_link_options(app PRIVATE -Wl,--wrap=z_sys_poweroff)
