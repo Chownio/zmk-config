@@ -12,7 +12,7 @@
 
 / {
     behaviors {
-        display_soft_off: display_soft_off {
+        dsoftoff: dsoftoff {
             compatible = "zmk,behavior-display-soft-off";
             #binding-cells = <0>;
         };
@@ -22,7 +22,7 @@
             #binding-cells = <2>;
             flavor = "hold-preferred";
             tapping-term-ms = <1000>;
-            bindings = <&display_soft_off>, <&kp>;
+            bindings = <&dsoftoff>, <&kp>;
         };
     };
 
