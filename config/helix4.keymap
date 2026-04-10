@@ -10,11 +10,6 @@
 #include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/outputs.h>
 
-#define DEFAULT 0
-#define LOWER  1
-#define RAISE  2
-#define ADJUST 3
-
 / {
     behaviors {
         display_soft_off: display_soft_off {
